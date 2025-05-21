@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="hr">
+<head>
+  <meta charset="UTF-8" />
+  <title>Admin panel - CaffeKarijere</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+      background: #f0f0f0;
+    }
+    h1 {
+      text-align: center;
+    }
+    .oglas {
+      background-color: #fff;
+      border: 1px solid #aaa;
+      padding: 15px;
+      margin: 10px 0;
+      border-radius: 10px;
+    }
+    button {
+      margin-right: 10px;
+      padding: 6px 12px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <h1>Admin panel - CaffeKarijere</h1>
+  <div id="neodobreni-oglasi"></div>
+  <p id="poruka" style="color:green; font-weight:bold;"></p>
+
+  <script>
+    const prikaz = document.getElementById("neodobreni-oglasi");
+    const poruka = document.getElementById("poruka");
+
+    let neodobreni = JSON.parse(localStorage.getItem("neodobreniOglasi")) || [];
+    let odobreni = JSON.parse(localStorage.getItem("oglasi")) || [];
+
+    function prikazi() {
+      prikaz.innerHTML = "";
+      poruka.textContent = "";
+      if (neodobreni.length === 0) {
+        prikaz.innerHTML = "<p>Nema oglasa za odobravanje.</p>";
+        return;
+      }
+
+      neodobreni.forEach((o, index) => {
+        const div = document.createElement("div");
+        div.className = "oglas";
+        div.innerHTML = `
+          <h3>${o.naslov}</h3>
+          <p><strong>Opis:</strong> ${o.opis}</p>
+          <p><strong>Lokacija:</strong> ${o.lokacija}</p>
+          <p><strong>Radno vrijeme:</strong> ${o.radnovrijeme}</p>
+          <p><strong>Plaća:</strong> ${o.placa}</p>
+          <p><strong>Slobodni dani:</strong> ${o.slobodnidani}</p>
+          <p><strong>Kontakt:</strong> ${o.kontakt}</p>
+          <p><em>Poslano: ${new Date(o.datum).toLocaleString()}</em></p>
+          <button onclick="odobri(${index})">Odobri</button>
+          <button onclick="obrisi(${index})">Odbaci</button>
+        `;
+        prikaz.appendChild(div);
+      });
+    }
+
+    function odobri(index) {
+      const oglas = neodobreni.splice(index, 1)[0];
+      odobreni.unshift(oglas);
+      localStorage.setItem("neodobreniOglasi", JSON.stringify(neodobreni));
+      localStorage.setItem("oglasi", JSON.stringify(odobreni));
+      poruka.textContent = `Oglas "${oglas.naslov}" je odobren.`;
+      prikazi();
+    }
+
+    function obrisi(index) {
+      const oglas = neodobreni[index];
+      neodobreni.splice(index, 1);
+      localStorage.setItem("neodobreniOglasi", JSON.stringify(neodobreni));
+      poruka.textContent = `Oglas "${oglas.naslov}" je odbijen i uklonjen.`;
+      prikazi();
+    }
+
+    prikazi();
+  </script>
+</body>
+</html>
+
