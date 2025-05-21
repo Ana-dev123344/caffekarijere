@@ -1,393 +1,130 @@
-<!DOCTYPE html>
-<html lang="hr">
-<head>
-  <meta charset="UTF-8" />
-  <title>CaffeKarijere</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background-image: url('https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?auto=format&fit=crop&w=1470&q=80');
-      background-size: cover;
-      background-position: center;
-      color: #fff;
-      padding: 20px;
+<!-- Firebase App (the core Firebase SDK) -->
+<script type="module">
+  // Import potrebnih funkcija iz Firebase SDK (modularni stil)
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
+  import { getFirestore, collection, addDoc, getDocs, query, where } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
+
+  // Tvoja Firebase konfiguracija
+  const firebaseConfig = {
+    apiKey: "AIzaSyD4vRy6_vHesseZ48ACypFvXEqOFCiKtn0",
+    authDomain: "caffekarijere.firebaseapp.com",
+    projectId: "caffekarijere",
+    storageBucket: "caffekarijere.firebasestorage.app",
+    messagingSenderId: "1043816458935",
+    appId: "1:1043816458935:web:2ff9af33b0b966d39e3b32",
+    measurementId: "G-M3ZQ99QZE5"
+  };
+
+  // Inicijaliziraj Firebase
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+
+  // Ovdje možeš staviti svoje funkcije koje komuniciraju s Firestoreom
+  // Na primjer, spremanje oglasa:
+  async function posaljiOglasNaOdobrenje(oglas) {
+    try {
+      await addDoc(collection(db, "neodobreniOglasi"), oglas);
+      alert("Oglas je poslan na odobrenje u Firestore!");
+    } catch (error) {
+      console.error("Greška pri spremanju oglasa:", error);
     }
+  }
 
-    h1, h2 {
-      text-align: center;
-      text-shadow: 1px 1px 3px #000;
-    }
-
-    #ulaz {
-      text-align: center;
-      margin-top: 100px;
-    }
-
-    #ulaz button {
-      font-size: 26px;
-      padding: 25px 40px;
-      margin: 20px;
-      border-radius: 12px;
-      background-color: rgba(0,0,0,0.7);
-      color: white;
-      border: 2px solid white;
-      cursor: pointer;
-      transition: background-color 0.3s;
-    }
-
-    #ulaz button:hover {
-      background-color: rgba(255,255,255,0.2);
-    }
-
-    .oglas {
-      background-color: rgba(0,0,0,0.7);
-      padding: 15px;
-      margin: 10px;
-      border-radius: 10px;
-      width: 45%;
-      display: inline-block;
-      vertical-align: top;
-      box-sizing: border-box;
-    }
-
-    form input, form textarea, form select {
-      width: 100%;
-      padding: 10px;
-      margin: 5px 0;
-    }
-
-    button {
-      padding: 10px 20px;
-      margin-top: 10px;
-      cursor: pointer;
-    }
-
-    #filteri {
-      background-color: rgba(0,0,0,0.6);
-      padding: 15px;
-      margin-bottom: 20px;
-      border-radius: 10px;
-    }
-
-    #filteri select, #filteri input {
-      margin-right: 10px;
-      margin-bottom: 10px;
-    }
-
-    label {
-      margin-right: 5px;
-    }
-  </style>
-</head>
-<body>
-  <h1>CaffeKarijere</h1>
-
-  <div id="ulaz">
-    <h2>Ovdje sam jer:</h2>
-    <button onclick="prikaziPoslodavac()">Tražim radnika</button>
-    <button onclick="prikaziRadnik()">Tražim posao</button>
-  </div>
-
-  <div id="poslodavac-dio" style="display:none;">
-    <h2>Objavi oglas</h2>
-    <form id="oglas-form">
-      <select id="naslov" required>
-        <option value="">Odaberi poziciju</option>
-        <option>Konobar u kafiću</option>
-        <option>Konobar u restoranu</option>
-        <option>Šanker u kafiću</option>
-        <option>Šanker u restoranu</option>
-        <option>Kuhar</option>
-        <option>Pomoćni djelatnici</option>
-      </select>
-      <textarea id="opis" placeholder="Opis posla" required></textarea>
-
-      <!-- Lokacija s datalist -->
-      <input list="gradovi" id="lokacija" placeholder="Odaberi ili upiši lokaciju" required />
-      <datalist id="gradovi">
-        <option value="Zagreb"></option>
-        <option value="Split"></option>
-        <option value="Rijeka"></option>
-        <option value="Osijek"></option>
-        <option value="Zadar"></option>
-        <option value="Slavonski Brod"></option>
-        <option value="Pula"></option>
-        <option value="Karlovac"></option>
-        <option value="Varaždin"></option>
-        <option value="Šibenik"></option>
-        <option value="Sisak"></option>
-        <option value="Velika Gorica"></option>
-        <option value="Vinkovci"></option>
-        <option value="Koprivnica"></option>
-        <option value="Bjelovar"></option>
-        <option value="Čakovec"></option>
-        <option value="Đakovo"></option>
-        <option value="Križevci"></option>
-        <option value="Požega"></option>
-        <option value="Samobor"></option>
-        <option value="Vukovar"></option>
-        <option value="Zaprešić"></option>
-        <option value="Petrinja"></option>
-        <option value="Ivanić-Grad"></option>
-        <option value="Kutina"></option>
-        <option value="Nova Gradiška"></option>
-        <option value="Opatija"></option>
-        <option value="Solin"></option>
-        <option value="Makarska"></option>
-        <option value="Prelog"></option>
-        <option value="Virovitica"></option>
-        <option value="Krapina"></option>
-        <option value="Gospić"></option>
-        <option value="Buje"></option>
-        <option value="Đurđevac"></option>
-        <option value="Beli Manastir"></option>
-        <option value="Metković"></option>
-        <option value="Nin"></option>
-        <option value="Novska"></option>
-        <option value="Duga Resa"></option>
-        <option value="Zabok"></option>
-        <option value="Imotski"></option>
-        <option value="Knin"></option>
-        <option value="Ogulin"></option>
-        <option value="Pazin"></option>
-        <option value="Rovinj"></option>
-        <option value="Trogir"></option>
-        <option value="Vrbovec"></option>
-        <option value="Crikvenica"></option>
-        <option value="Klanjec"></option>
-        <option value="Belišće"></option>
-        <option value="Novigrad"></option>
-        <option value="Oroslavje"></option>
-        <option value="Daruvar"></option>
-        <option value="Sveti Ivan Zelina"></option>
-        <option value="Drniš"></option>
-        <option value="Lepoglava"></option>
-        <option value="Pag"></option>
-        <option value="Slatina"></option>
-        <option value="Delnice"></option>
-        <option value="Ilok"></option>
-        <option value="Trilj"></option>
-        <option value="Korčula"></option>
-        <option value="Kaštela"></option>
-        <option value="Biograd na Moru"></option>
-        <option value="Cres"></option>
-        <option value="Mali Lošinj"></option>
-        <option value="Novalja"></option>
-        <option value="Rab"></option>
-        <option value="Vodice"></option>
-        <option value="Labin"></option>
-        <option value="Kastav"></option>
-        <option value="Omiš"></option>
-      </datalist>
-
-      <select id="radnovrijeme" required>
-        <option value="">Odaberi radno vrijeme</option>
-        <option>Puno radno vrijeme</option>
-        <option>Pola radnog vremena</option>
-        <option>Po dogovoru</option>
-        <option>Samo vikendom</option>
-        <option>Od ponedjeljka do petka</option>
-      </select>
-
-      <input type="number" id="placa" placeholder="Plaća (npr. 5000 - neto)" required />
-
-      <select id="slobodnidani" required>
-        <option value="">Odaberi slobodne dane</option>
-        <option>Jedan dan tjedno</option>
-        <option>Dva dana tjedno</option>
-        <option>Po dogovoru</option>
-      </select>
-
-      <input type="text" id="kontakt" placeholder="Kontakt" required />
-
-      <button type="submit">Pošalji oglas na odobrenje</button>
-    </form>
-    <p style="color:lightgreen;">Nakon što pošaljete oglas, administrator će ga odobriti i prikazati na stranici.</p>
-  </div>
-
-  <div id="radnik-dio" style="display:none;">
-    <h2>Dostupni oglasi</h2>
-
-    <div id="filteri">
-      <label for="fPozicija">Pozicija:</label>
-      <select id="fPozicija">
-        <option value="">Sve</option>
-        <option>Konobar u kafiću</option>
-        <option>Konobar u restoranu</option>
-        <option>Šanker u kafiću</option>
-        <option>Šanker u restoranu</option>
-        <option>Kuhar</option>
-        <option>Pomoćni djelatnici</option>
-      </select>
-
-      <label for="fLokacija">Lokacija:</label>
-      <input list="gradovi" id="fLokacija" placeholder="Filtriraj po lokaciji" />
-      
-      <label for="fPlaca">Minimalna plaća:</label>
-      <input type="number" id="fPlaca" placeholder="Npr. 4000" min="0" />
-    </div>
-
-    <div id="oglasi"></div>
-  </div>
-
-  <datalist id="gradovi">
-    <option value="Zagreb"></option>
-    <option value="Split"></option>
-    <option value="Rijeka"></option>
-    <option value="Osijek"></option>
-    <option value="Zadar"></option>
-    <option value="Slavonski Brod"></option>
-    <option value="Pula"></option>
-    <option value="Karlovac"></option>
-    <option value="Varaždin"></option>
-    <option value="Šibenik"></option>
-    <option value="Sisak"></option>
-    <option value="Velika Gorica"></option>
-    <option value="Vinkovci"></option>
-    <option value="Koprivnica"></option>
-    <option value="Bjelovar"></option>
-    <option value="Čakovec"></option>
-    <option value="Đakovo"></option>
-    <option value="Križevci"></option>
-    <option value="Požega"></option>
-    <option value="Samobor"></option>
-    <option value="Vukovar"></option>
-    <option value="Zaprešić"></option>
-    <option value="Petrinja"></option>
-    <option value="Ivanić-Grad"></option>
-    <option value="Kutina"></option>
-    <option value="Nova Gradiška"></option>
-    <option value="Opatija"></option>
-    <option value="Solin"></option>
-    <option value="Makarska"></option>
-    <option value="Prelog"></option>
-    <option value="Virovitica"></option>
-    <option value="Krapina"></option>
-    <option value="Gospić"></option>
-    <option value="Buje"></option>
-    <option value="Đurđevac"></option>
-    <option value="Beli Manastir"></option>
-    <option value="Metković"></option>
-    <option value="Nin"></option>
-    <option value="Novska"></option>
-    <option value="Duga Resa"></option>
-    <option value="Zabok"></option>
-    <option value="Imotski"></option>
-    <option value="Knin"></option>
-    <option value="Ogulin"></option>
-    <option value="Pazin"></option>
-    <option value="Rovinj"></option>
-    <option value="Trogir"></option>
-    <option value="Vrbovec"></option>
-    <option value="Crikvenica"></option>
-    <option value="Klanjec"></option>
-    <option value="Belišće"></option>
-    <option value="Novigrad"></option>
-    <option value="Oroslavje"></option>
-    <option value="Daruvar"></option>
-    <option value="Sveti Ivan Zelina"></option>
-    <option value="Drniš"></option>
-    <option value="Lepoglava"></option>
-    <option value="Pag"></option>
-    <option value="Slatina"></option>
-    <option value="Delnice"></option>
-    <option value="Ilok"></option>
-    <option value="Trilj"></option>
-    <option value="Korčula"></option>
-    <option value="Kaštela"></option>
-    <option value="Biograd na Moru"></option>
-    <option value="Cres"></option>
-    <option value="Mali Lošinj"></option>
-    <option value="Novalja"></option>
-    <option value="Rab"></option>
-    <option value="Vodice"></option>
-    <option value="Labin"></option>
-    <option value="Kastav"></option>
-    <option value="Omiš"></option>
-  </datalist>
-
-  <script>
-    const forma = document.getElementById("oglas-form");
+  // Dohvat odobrenih oglasa:
+  async function dohvatiOdobreneOglase() {
     const oglasiDiv = document.getElementById("oglasi");
+    oglasiDiv.innerHTML = "Učitavanje oglasa...";
 
-    function prikaziPoslodavac() {
-      document.getElementById("ulaz").style.display = "none";
-      document.getElementById("poslodavac-dio").style.display = "block";
-      document.getElementById("radnik-dio").style.display = "none";
+    try {
+      const querySnapshot = await getDocs(collection(db, "oglasi"));
+      const oglasi = [];
+      querySnapshot.forEach(doc => {
+        oglasi.push({ id: doc.id, ...doc.data() });
+      });
+
+      // Ovdje stavi funkciju za prikaz oglasa s filtriranjem
+      prikaziOglase(oglasi);
+    } catch (error) {
+      console.error("Greška pri dohvatu oglasa:", error);
+      oglasiDiv.innerHTML = "<p>Greška pri učitavanju oglasa.</p>";
     }
+  }
 
-    function prikaziRadnik() {
-      document.getElementById("ulaz").style.display = "none";
-      document.getElementById("radnik-dio").style.display = "block";
-      document.getElementById("poslodavac-dio").style.display = "none";
-      prikaziOdobreneOglase();
-    }
+  // Funkcija za prikaz oglasa s filtrima (možeš ju prilagoditi)
+  function prikaziOglase(oglasi) {
+    const oglasiDiv = document.getElementById("oglasi");
+    const fPozicija = document.getElementById("fPozicija").value.toLowerCase();
+    const fLokacija = document.getElementById("fLokacija").value.toLowerCase();
+    const fPlaca = Number(document.getElementById("fPlaca").value) || 0;
 
-    forma.addEventListener("submit", function (e) {
-      e.preventDefault();
+    oglasiDiv.innerHTML = "";
 
-      const oglas = {
-        naslov: document.getElementById("naslov").value,
-        opis: document.getElementById("opis").value,
-        lokacija: document.getElementById("lokacija").value,
-        radnovrijeme: document.getElementById("radnovrijeme").value,
-        placa: document.getElementById("placa").value,
-        slobodnidani: document.getElementById("slobodnidani").value,
-        kontakt: document.getElementById("kontakt").value,
-        datum: new Date().toISOString(),
-      };
-
-      let neodobreni = JSON.parse(localStorage.getItem("neodobreniOglasi")) || [];
-      neodobreni.push(oglas);
-      localStorage.setItem("neodobreniOglasi", JSON.stringify(neodobreni));
-      forma.reset();
-      alert("Oglas je poslan na odobrenje.");
+    const filtrirani = oglasi.filter(o => {
+      const pozicijaUslov = !fPozicija || o.naslov.toLowerCase() === fPozicija;
+      const lokacijaUslov = !fLokacija || o.lokacija.toLowerCase().includes(fLokacija);
+      const placaUslov = !fPlaca || Number(o.placa) >= fPlaca;
+      return pozicijaUslov && lokacijaUslov && placaUslov;
     });
 
-    const fPozicija = document.getElementById("fPozicija");
-    const fLokacija = document.getElementById("fLokacija");
-    const fPlaca = document.getElementById("fPlaca");
-
-    function prikaziOdobreneOglase() {
-      const oglasi = JSON.parse(localStorage.getItem("oglasi")) || [];
-
-      // Filtriraj prema filterima
-      const filtrirani = oglasi.filter(o => {
-        const pozicijaUslov = !fPozicija.value || o.naslov === fPozicija.value;
-        const lokacijaUslov = !fLokacija.value || o.lokacija.toLowerCase().includes(fLokacija.value.toLowerCase());
-        const placaUslov = !fPlaca.value || Number(o.placa) >= Number(fPlaca.value);
-        return pozicijaUslov && lokacijaUslov && placaUslov;
-      });
-
-      oglasiDiv.innerHTML = "";
-
-      if (filtrirani.length === 0) {
-        oglasiDiv.innerHTML = "<p>Nema oglasa koji odgovaraju filtrima.</p>";
-        return;
-      }
-
-      filtrirani.forEach(o => {
-        const div = document.createElement("div");
-        div.classList.add("oglas");
-        div.innerHTML = `
-          <h3>${o.naslov}</h3>
-          <p>${o.opis}</p>
-          <p><strong>Lokacija:</strong> ${o.lokacija}</p>
-          <p><strong>Radno vrijeme:</strong> ${o.radnovrijeme}</p>
-          <p><strong>Plaća:</strong> ${o.placa}</p>
-          <p><strong>Slobodni dani:</strong> ${o.slobodnidani}</p>
-          <p><strong>Kontakt:</strong> ${o.kontakt}</p>
-          <hr />
-        `;
-        oglasiDiv.appendChild(div);
-      });
+    if (filtrirani.length === 0) {
+      oglasiDiv.innerHTML = "<p>Nema oglasa koji odgovaraju filtrima.</p>";
+      return;
     }
 
-    fPozicija.addEventListener("change", prikaziOdobreneOglase);
-    fLokacija.addEventListener("input", prikaziOdobreneOglase);
-    fPlaca.addEventListener("input", prikaziOdobreneOglase);
+    filtrirani.forEach(o => {
+      const div = document.createElement("div");
+      div.classList.add("oglas");
+      div.innerHTML = `
+        <h3>${o.naslov}</h3>
+        <p>${o.opis}</p>
+        <p><strong>Lokacija:</strong> ${o.lokacija}</p>
+        <p><strong>Radno vrijeme:</strong> ${o.radnovrijeme}</p>
+        <p><strong>Plaća:</strong> ${o.placa}</p>
+        <p><strong>Slobodni dani:</strong> ${o.slobodnidani}</p>
+        <p><strong>Kontakt:</strong> ${o.kontakt}</p>
+        <hr />
+      `;
+      oglasiDiv.appendChild(div);
+    });
+  }
 
-  </script>
-</body>
-</html>
+  // Event listener za formu (umjesto localStorage, koristi Firestore)
+  const forma = document.getElementById("oglas-form");
+  forma.addEventListener("submit", async (e) => {
+    e.preventDefault();
 
+    const oglas = {
+      naslov: document.getElementById("naslov").value,
+      opis: document.getElementById("opis").value,
+      lokacija: document.getElementById("lokacija").value,
+      radnovrijeme: document.getElementById("radnovrijeme").value,
+      placa: document.getElementById("placa").value,
+      slobodnidani: document.getElementById("slobodnidani").value,
+      kontakt: document.getElementById("kontakt").value,
+      datum: new Date().toISOString(),
+    };
+
+    await posaljiOglasNaOdobrenje(oglas);
+    forma.reset();
+  });
+
+  // Prikaz oglasa kad korisnik klikne da traži posao
+  window.prikaziRadnik = () => {
+    document.getElementById("ulaz").style.display = "none";
+    document.getElementById("radnik-dio").style.display = "block";
+    document.getElementById("poslodavac-dio").style.display = "none";
+    dohvatiOdobreneOglase();
+  };
+
+  // Filtri za oglase
+  document.getElementById("fPozicija").addEventListener("change", dohvatiOdobreneOglase);
+  document.getElementById("fLokacija").addEventListener("input", dohvatiOdobreneOglase);
+  document.getElementById("fPlaca").addEventListener("input", dohvatiOdobreneOglase);
+
+  // Funkcija za prikaz poslodavca (ostaje tvoja postojeća)
+  window.prikaziPoslodavac = () => {
+    document.getElementById("ulaz").style.display = "none";
+    document.getElementById("poslodavac-dio").style.display = "block";
+    document.getElementById("radnik-dio").style.display = "none";
+  };
+</script>
