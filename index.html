@@ -1,3 +1,33 @@
+@@ -1,130 +1,346 @@
+<!-- Firebase App (the core Firebase SDK) -->
+<script type="module">
+  // Import potrebnih funkcija iz Firebase SDK (modularni stil)
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
+  import { getFirestore, collection, addDoc, getDocs, query, where } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
+
+  // Tvoja Firebase konfiguracija
+  const firebaseConfig = {
+    apiKey: "AIzaSyD4vRy6_vHesseZ48ACypFvXEqOFCiKtn0",
+    authDomain: "caffekarijere.firebaseapp.com",
+    projectId: "caffekarijere",
+    storageBucket: "caffekarijere.firebasestorage.app",
+    messagingSenderId: "1043816458935",
+    appId: "1:1043816458935:web:2ff9af33b0b966d39e3b32",
+    measurementId: "G-M3ZQ99QZE5"
+  };
+
+  // Inicijaliziraj Firebase
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+
+  // Ovdje možeš staviti svoje funkcije koje komuniciraju s Firestoreom
+  // Na primjer, spremanje oglasa:
+  async function posaljiOglasNaOdobrenje(oglas) {
+    try {
+      await addDoc(collection(db, "neodobreniOglasi"), oglas);
+      alert("Oglas je poslan na odobrenje u Firestore!");
+    } catch (error) {
+      console.error("Greška pri spremanju oglasa:", error);
 <!DOCTYPE html>
 <html lang="hr">
 <head>
@@ -12,10 +42,50 @@
       color: #fff;
       padding: 20px;
     }
+  }
+
+  // Dohvat odobrenih oglasa:
+  async function dohvatiOdobreneOglase() {
+    const oglasiDiv = document.getElementById("oglasi");
+    oglasiDiv.innerHTML = "Učitavanje oglasa...";
+
+    try {
+      const querySnapshot = await getDocs(collection(db, "oglasi"));
+      const oglasi = [];
+      querySnapshot.forEach(doc => {
+        oglasi.push({ id: doc.id, ...doc.data() });
+      });
+
+      // Ovdje stavi funkciju za prikaz oglasa s filtriranjem
+      prikaziOglase(oglasi);
+    } catch (error) {
+      console.error("Greška pri dohvatu oglasa:", error);
+      oglasiDiv.innerHTML = "<p>Greška pri učitavanju oglasa.</p>";
     h1, h2 {
       text-align: center;
       text-shadow: 1px 1px 3px #000;
     }
+  }
+
+  // Funkcija za prikaz oglasa s filtrima (možeš ju prilagoditi)
+  function prikaziOglase(oglasi) {
+    const oglasiDiv = document.getElementById("oglasi");
+    const fPozicija = document.getElementById("fPozicija").value.toLowerCase();
+    const fLokacija = document.getElementById("fLokacija").value.toLowerCase();
+    const fPlaca = Number(document.getElementById("fPlaca").value) || 0;
+
+    oglasiDiv.innerHTML = "";
+
+    const filtrirani = oglasi.filter(o => {
+      const pozicijaUslov = !fPozicija || o.naslov.toLowerCase() === fPozicija;
+      const lokacijaUslov = !fLokacija || o.lokacija.toLowerCase().includes(fLokacija);
+      const placaUslov = !fPlaca || Number(o.placa) >= fPlaca;
+      return pozicijaUslov && lokacijaUslov && placaUslov;
+    });
+
+    if (filtrirani.length === 0) {
+      oglasiDiv.innerHTML = "<p>Nema oglasa koji odgovaraju filtrima.</p>";
+      return;
     #ulaz {
       text-align: center;
       margin-top: 100px;
@@ -72,6 +142,37 @@
 <body>
   <h1>CaffeKarijere</h1>
 
+    filtrirani.forEach(o => {
+      const div = document.createElement("div");
+      div.classList.add("oglas");
+      div.innerHTML = `
+        <h3>${o.naslov}</h3>
+        <p>${o.opis}</p>
+        <p><strong>Lokacija:</strong> ${o.lokacija}</p>
+        <p><strong>Radno vrijeme:</strong> ${o.radnovrijeme}</p>
+        <p><strong>Plaća:</strong> ${o.placa}</p>
+        <p><strong>Slobodni dani:</strong> ${o.slobodnidani}</p>
+        <p><strong>Kontakt:</strong> ${o.kontakt}</p>
+        <hr />
+      `;
+      oglasiDiv.appendChild(div);
+    });
+  }
+
+  // Event listener za formu (umjesto localStorage, koristi Firestore)
+  const forma = document.getElementById("oglas-form");
+  forma.addEventListener("submit", async (e) => {
+    e.preventDefault();
+
+    const oglas = {
+      naslov: document.getElementById("naslov").value,
+      opis: document.getElementById("opis").value,
+      lokacija: document.getElementById("lokacija").value,
+      radnovrijeme: document.getElementById("radnovrijeme").value,
+      placa: document.getElementById("placa").value,
+      slobodnidani: document.getElementById("slobodnidani").value,
+      kontakt: document.getElementById("kontakt").value,
+      datum: new Date().toISOString(),
   <div id="ulaz">
     <h2>Ovdje sam jer:</h2>
     <button onclick="prikaziPoslodavac()">Tražim radnika</button>
@@ -311,6 +412,30 @@
       measurementId: "G-M3ZQ99QZE5"
     };
 
+    await posaljiOglasNaOdobrenje(oglas);
+    forma.reset();
+  });
+
+  // Prikaz oglasa kad korisnik klikne da traži posao
+  window.prikaziRadnik = () => {
+    document.getElementById("ulaz").style.display = "none";
+    document.getElementById("radnik-dio").style.display = "block";
+    document.getElementById("poslodavac-dio").style.display = "none";
+    dohvatiOdobreneOglase();
+  };
+
+  // Filtri za oglase
+  document.getElementById("fPozicija").addEventListener("change", dohvatiOdobreneOglase);
+  document.getElementById("fLokacija").addEventListener("input", dohvatiOdobreneOglase);
+  document.getElementById("fPlaca").addEventListener("input", dohvatiOdobreneOglase);
+
+  // Funkcija za prikaz poslodavca (ostaje tvoja postojeća)
+  window.prikaziPoslodavac = () => {
+    document.getElementById("ulaz").style.display = "none";
+    document.getElementById("poslodavac-dio").style.display = "block";
+    document.getElementById("radnik-dio").style.display = "none";
+  };
+</script>
     // Inicijaliziraj Firebase
     const app = firebase.initializeApp(firebaseConfig);
     const analytics = firebase.analytics();
